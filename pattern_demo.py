@@ -18,6 +18,163 @@ class SortStrategy(ABC):
     def get_name(self):
         pass
 
+# ========================================
+# PATRÓN STRATEGY PARA MOVIMIENTO
+# ========================================
+
+class MovimientoStrategy(ABC):
+    """Interfaz Strategy para movimiento de objetos"""
+    @abstractmethod
+    def mover(self, x, y, canvas, objeto_id):
+        """Mueve el objeto a una nueva posición"""
+        pass
+    
+    @abstractmethod
+    def get_nombre(self):
+        """Retorna el nombre de la estrategia"""
+        pass
+    
+    @abstractmethod
+    def get_velocidad(self):
+        """Retorna la velocidad de movimiento"""
+        pass
+
+class CaminarStrategy(MovimientoStrategy):
+    """Estrategia de movimiento: Caminar (lento)"""
+    def __init__(self):
+        self.velocidad = 2
+        
+    def mover(self, x, y, canvas, objeto_id):
+        """Movimiento lento y constante"""
+        coords = canvas.coords(objeto_id)
+        if coords:
+            current_x = (coords[0] + coords[2]) / 2
+            current_y = (coords[1] + coords[3]) / 2
+            
+            # Calcular dirección
+            dx = x - current_x
+            dy = y - current_y
+            distancia = (dx**2 + dy**2)**0.5
+            
+            if distancia > self.velocidad:
+                # Normalizar y aplicar velocidad
+                dx = (dx / distancia) * self.velocidad
+                dy = (dy / distancia) * self.velocidad
+                canvas.move(objeto_id, dx, dy)
+                return False  # No ha llegado al destino
+            else:
+                # Mover exactamente al destino
+                canvas.coords(objeto_id, 
+                            x - 15, y - 15, 
+                            x + 15, y + 15)
+                return True  # Ha llegado al destino
+        return True
+    
+    def get_nombre(self):
+        return "Caminar"
+    
+    def get_velocidad(self):
+        return self.velocidad
+
+class CorrerStrategy(MovimientoStrategy):
+    """Estrategia de movimiento: Correr (rápido)"""
+    def __init__(self):
+        self.velocidad = 8
+        
+    def mover(self, x, y, canvas, objeto_id):
+        """Movimiento rápido"""
+        coords = canvas.coords(objeto_id)
+        if coords:
+            current_x = (coords[0] + coords[2]) / 2
+            current_y = (coords[1] + coords[3]) / 2
+            
+            # Calcular dirección
+            dx = x - current_x
+            dy = y - current_y
+            distancia = (dx**2 + dy**2)**0.5
+            
+            if distancia > self.velocidad:
+                # Normalizar y aplicar velocidad
+                dx = (dx / distancia) * self.velocidad
+                dy = (dy / distancia) * self.velocidad
+                canvas.move(objeto_id, dx, dy)
+                return False  # No ha llegado al destino
+            else:
+                # Mover exactamente al destino
+                canvas.coords(objeto_id, 
+                            x - 15, y - 15, 
+                            x + 15, y + 15)
+                return True  # Ha llegado al destino
+        return True
+    
+    def get_nombre(self):
+        return "Correr"
+    
+    def get_velocidad(self):
+        return self.velocidad
+
+class TeletransporteStrategy(MovimientoStrategy):
+    """Estrategia de movimiento: Teletransporte (instantáneo)"""
+    def __init__(self):
+        self.velocidad = float('inf')
+        
+    def mover(self, x, y, canvas, objeto_id):
+        """Teletransporte instantáneo al destino"""
+        canvas.coords(objeto_id, 
+                    x - 15, y - 15, 
+                    x + 15, y + 15)
+        return True  # Siempre llega al destino instantáneamente
+    
+    def get_nombre(self):
+        return "Teletransporte"
+    
+    def get_velocidad(self):
+        return self.velocidad
+
+class ObjetoMovible:
+    """Objeto que utiliza estrategias de movimiento"""
+    def __init__(self, canvas, x, y, color='#FF6B6B'):
+        self.canvas = canvas
+        self.x = x
+        self.y = y
+        self.color = color
+        
+        # Crear objeto visual (círculo)
+        self.objeto_id = canvas.create_oval(
+            x - 15, y - 15, x + 15, y + 15,
+            fill=color, outline='white', width=2
+        )
+        
+        # Estrategia inicial
+        self.estrategia = CaminarStrategy()
+        
+        # Control de animación
+        self.animando = False
+        self.destino_x = x
+        self.destino_y = y
+        
+    def set_estrategia(self, estrategia: MovimientoStrategy):
+        """Cambia la estrategia de movimiento"""
+        self.estrategia = estrategia
+        
+    def mover_a(self, x, y):
+        """Inicia el movimiento hacia un destino"""
+        self.destino_x = x
+        self.destino_y = y
+        self.animando = True
+        
+    def actualizar(self):
+        """Actualiza la posición del objeto según la estrategia actual"""
+        if self.animando:
+            llego = self.estrategia.mover(self.destino_x, self.destino_y, 
+                                        self.canvas, self.objeto_id)
+            if llego:
+                self.animando = False
+                
+    def get_estrategia_actual(self):
+        """Retorna la estrategia actual"""
+        return self.estrategia.get_nombre()
+
 class BubbleSortStrategy(SortStrategy):
     """Estrategia concreta: Bubble Sort"""
     def sort(self, data):
@@ -186,13 +343,20 @@ class PatternDemoApp:
         
     def setup_patterns(self):
         """Inicializar las implementaciones de los patrones"""
-        # Estrategias para Strategy
+        # Estrategias para Strategy (ordenamiento)
         self.strategies = {
             "A": BubbleSortStrategy(),
             "B": QuickSortStrategy(), 
             "C": MergeSortStrategy()
         }
         self.sort_context = SortContext(self.strategies["A"])
+        
+        # Estrategias de movimiento
+        self.movimiento_strategies = {
+            "caminar": CaminarStrategy(),
+            "correr": CorrerStrategy(),
+            "teletransporte": TeletransporteStrategy()
+        }
         
         # Procesadores para Template Method
         self.processors = {
@@ -203,6 +367,9 @@ class PatternDemoApp:
         
         # Datos de ejemplo
         self.sample_data = [64, 34, 25, 12, 22, 11, 90, 88, 45, 50]
+        
+        # Control de animación
+        self.animacion_activa = False
         
     def setup_ui(self):
         # Título principal
@@ -255,16 +422,93 @@ class PatternDemoApp:
         )
         strategy_desc.pack(pady=5)
         
-        # Canvas para animación Strategy
+        # Canvas para animación Strategy (ordenamiento)
         self.strategy_canvas = tk.Canvas(
             strategy_frame,
             width=550,
-            height=300,
+            height=200,
             bg='#1e1e1e',
             highlightthickness=2,
             highlightbackground=self.colors['strategy']
         )
-        self.strategy_canvas.pack(pady=10, padx=10)
+        self.strategy_canvas.pack(pady=5, padx=10)
+        
+        # Canvas para demostración de movimiento Strategy
+        movimiento_frame = tk.Frame(strategy_frame, bg=self.colors['panel_bg'])
+        movimiento_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        movimiento_label = tk.Label(
+            movimiento_frame,
+            text="DEMO STRATEGY - MOVIMIENTO DINÁMICO",
+            font=('Arial', 11, 'bold'),
+            fg=self.colors['strategy'],
+            bg=self.colors['panel_bg']
+        )
+        movimiento_label.pack(pady=5)
+        
+        self.movimiento_canvas = tk.Canvas(
+            movimiento_frame,
+            width=550,
+            height=150,
+            bg='#0a0a0a',
+            highlightthickness=2,
+            highlightbackground=self.colors['accent']
+        )
+        self.movimiento_canvas.pack(pady=5)
+        
+        # Crear objeto movible para demostración
+        self.objeto_movible = ObjetoMovible(self.movimiento_canvas, 50, 75, '#FF6B6B')
+        
+        # Área de clic en el canvas
+        self.movimiento_canvas.bind("<Button-1>", self.on_canvas_click)
+        
+        # Frame de control de movimiento
+        control_frame = tk.Frame(movimiento_frame, bg=self.colors['panel_bg'])
+        control_frame.pack(pady=5)
+        
+        # Botones de estrategia de movimiento
+        self.caminar_btn = tk.Button(
+            control_frame,
+            text="🚶 Caminar",
+            command=lambda: self.cambiar_estrategia_movimiento("caminar"),
+            bg='#4CAF50',
+            fg='white',
+            font=('Arial', 9, 'bold'),
+            width=12
+        )
+        self.caminar_btn.grid(row=0, column=0, padx=3)
+        
+        self.correr_btn = tk.Button(
+            control_frame,
+            text="🏃 Correr",
+            command=lambda: self.cambiar_estrategia_movimiento("correr"),
+            bg='#FF9800',
+            fg='white',
+            font=('Arial', 9, 'bold'),
+            width=12
+        )
+        self.correr_btn.grid(row=0, column=1, padx=3)
+        
+        self.teletransporte_btn = tk.Button(
+            control_frame,
+            text="⚡ Teletransporte",
+            command=lambda: self.cambiar_estrategia_movimiento("teletransporte"),
+            bg='#9C27B0',
+            fg='white',
+            font=('Arial', 9, 'bold'),
+            width=14
+        )
+        self.teletransporte_btn.grid(row=0, column=2, padx=3)
+        
+        # Estado actual
+        self.estado_label = tk.Label(
+            movimiento_frame,
+            text=f"Estrategia actual: {self.objeto_movible.get_estrategia_actual()}",
+            font=('Arial', 10),
+            fg=self.colors['text'],
+            bg=self.colors['panel_bg']
+        )
+        self.estado_label.pack(pady=3)
         
         # Frame de botones Strategy
         strategy_buttons = tk.Frame(strategy_frame, bg=self.colors['panel_bg'])
@@ -668,6 +912,48 @@ class PatternDemoApp:
             self.execute_template(template)
             self.root.update()
             time.sleep(2)
+    
+    def on_canvas_click(self, event):
+        """Maneja clics en el canvas de movimiento"""
+        # Mover el objeto a la posición del clic
+        self.objeto_movible.mover_a(event.x, event.y)
+        
+        # Iniciar animación si no está activa
+        if not self.animacion_activa:
+            self.animacion_activa = True
+            self.actualizar_animacion()
+    
+    def cambiar_estrategia_movimiento(self, estrategia_nombre):
+        """Cambia la estrategia de movimiento del objeto"""
+        nueva_estrategia = self.movimiento_strategies[estrategia_nombre]
+        self.objeto_movible.set_estrategia(nueva_estrategia)
+        
+        # Actualizar etiqueta de estado
+        self.estado_label.config(
+            text=f"Estrategia actual: {self.objeto_movible.get_estrategia_actual()}"
+        )
+        
+        # Visual feedback - cambiar color del objeto temporalmente
+        colores = {"caminar": "#4CAF50", "correr": "#FF9800", "teletransporte": "#9C27B0"}
+        self.movimiento_canvas.itemconfig(
+            self.objeto_movible.objeto_id, 
+            fill=colores[estrategia_nombre]
+        )
+        
+        # Restaurar color original después de 500ms
+        self.root.after(500, lambda: self.movimiento_canvas.itemconfig(
+            self.objeto_movible.objeto_id, 
+            fill=self.objeto_movible.color
+        ))
+    
+    def actualizar_animacion(self):
+        """Actualiza la animación del objeto movible"""
+        if self.animacion_activa:
+            # Actualizar posición del objeto
+            self.objeto_movible.actualizar()
+            
+            # Continuar animación
+            self.root.after(30, self.actualizar_animacion)  # ~33 FPS
 
 def main():
     root = tk.Tk()

@@ -1,3 +1,5 @@
+PRIMERA VERSION:
+
 # Demostración Visual: Strategy vs Template Method
 
 Aplicación en Python con tkinter que demuestra visualmente la diferencia entre el patrón Strategy y el patrón Template Method.
@@ -13,10 +15,15 @@ Aplicación en Python con tkinter que demuestra visualmente la diferencia entre 
 
 ### Patrón Strategy (Izquierda)
 - **Propósito**: Permite cambiar el algoritmo en tiempo de ejecución
-- **Ejemplo**: Sistema de ordenamiento con diferentes algoritmos
-  - Bubble Sort (Estrategia A)
-  - Quick Sort (Estrategia B) 
-  - Merge Sort (Estrategia C)
+- **Ejemplos**:
+  - **Sistema de ordenamiento** con diferentes algoritmos:
+    - Bubble Sort (Estrategia A)
+    - Quick Sort (Estrategia B) 
+    - Merge Sort (Estrategia C)
+  - **Sistema de movimiento dinámico** con estrategias intercambiables:
+    - 🚶 **Caminar**: Movimiento lento y constante (velocidad 2)
+    - 🏃 **Correr**: Movimiento rápido (velocidad 8)
+    - ⚡ **Teletransporte**: Salto instantáneo al destino
 - **Característica clave**: El contexto puede intercambiar estrategias dinámicamente
 
 ### Patrón Template Method (Derecha)
@@ -38,7 +45,11 @@ python pattern_demo.py
 
 1. **Botones individuales**: Click en cualquier botón de estrategia/implementación para ver resultados específicos
 2. **Demostración automática**: Click en "INICIAR DEMOSTRACIÓN" para ver una animación secuencial de todas las opciones
-3. **Comparación visual**: Observa las diferencias en cómo cada patrón maneja la variabilidad
+3. **Movimiento Strategy dinámico**: 
+   - Click en cualquier punto del canvas de movimiento para mover el objeto
+   - Cambia la estrategia de movimiento mientras el objeto se mueve para ver el cambio en tiempo real
+   - Prueba las tres estrategias: Caminar (lento), Correr (rápido), Teletransporte (instantáneo)
+4. **Comparación visual**: Observa las diferencias en cómo cada patrón maneja la variabilidad
 
 ## Diferencias Clave Demostradas
 
@@ -57,18 +68,23 @@ python pattern_demo.py
 ```
 pattern_demo.py
 ├── Clases Strategy
-│   ├── SortStrategy (ABC)
+│   ├── SortStrategy (ABC) - Ordenamiento
 │   ├── BubbleSortStrategy
 │   ├── QuickSortStrategy
 │   ├── MergeSortStrategy
-│   └── SortContext
+│   ├── SortContext
+│   ├── MovimientoStrategy (ABC) - Movimiento
+│   ├── CaminarStrategy
+│   ├── CorrerStrategy
+│   ├── TeletransporteStrategy
+│   └── ObjetoMovible
 ├── Clases Template Method
 │   ├── DataProcessor (ABC)
 │   ├── SumProcessor
 │   ├── MaxProcessor
 │   └── StatisticsProcessor
 └── GUI (PatternDemoApp)
-    ├── Sección Strategy
+    ├── Sección Strategy (con demo de movimiento)
     └── Sección Template Method
 ```
 
