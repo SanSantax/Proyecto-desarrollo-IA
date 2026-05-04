@@ -319,6 +319,327 @@ class StatisticsProcessor(DataProcessor):
         variance = sum((x - sum(data)/len(data))**2 for x in data) / len(data)
         return f"Median: {median:.2f}, Variance: {variance:.2f}"
 
+# ========================================
+# PATRÓN TEMPLATE METHOD PARA PROCESAMIENTO GRÁFICO
+# ========================================
+
+class ProcesadorTarea(ABC):
+    """Clase abstracta con Template Method para procesamiento gráfico"""
+    
+    def __init__(self, canvas):
+        self.canvas = canvas
+        self.paso_actual = 0
+        self.animacion_activa = False
+        
+    def ejecutar_proceso(self):
+        """Template Method - define la estructura del proceso"""
+        self.paso_actual = 0
+        self.animacion_activa = True
+        
+        # Paso 1: Inicio (fijo)
+        self.inicio()
+        
+        # Paso 2: Procesar (variable - implementado por subclases)
+        self.root.after(1000, lambda: self._ejecutar_paso_procesar())
+        
+        # Paso 3: Fin (fijo)
+        self.root.after(2000, lambda: self._ejecutar_paso_fin())
+    
+    def _ejecutar_paso_procesar(self):
+        """Ejecuta el paso de procesamiento"""
+        if self.animacion_activa:
+            self.paso_actual = 1
+            self.procesar()
+    
+    def _ejecutar_paso_fin(self):
+        """Ejecuta el paso final"""
+        if self.animacion_activa:
+            self.paso_actual = 2
+            self.fin()
+            self.animacion_activa = False
+    
+    def inicio(self):
+        """Paso fijo - inicialización común"""
+        # Limpiar canvas
+        self.canvas.delete("all")
+        
+        # Dibujar marco de inicio
+        self.canvas.create_rectangle(
+            10, 10, 540, 140,
+            outline='#FFD700',
+            width=3,
+            fill='#1a1a1a'
+        )
+        
+        # Texto de inicio
+        self.canvas.create_text(
+            275, 30,
+            text="🚀 INICIANDO PROCESO",
+            fill='#FFD700',
+            font=('Arial', 14, 'bold')
+        )
+        
+        self.canvas.create_text(
+            275, 60,
+            text="Paso 1: Inicio (Fijo)",
+            fill='white',
+            font=('Arial', 11)
+        )
+        
+        self.canvas.create_text(
+            275, 85,
+            text="✓ Validando recursos",
+            fill='#4CAF50',
+            font=('Arial', 10)
+        )
+        
+        self.canvas.create_text(
+            275, 105,
+            text="✓ Preparando entorno",
+            fill='#4CAF50',
+            font=('Arial', 10)
+        )
+        
+        # Indicador de progreso
+        self.canvas.create_rectangle(
+            50, 125, 500, 135,
+            outline='white',
+            width=1
+        )
+        self.canvas.create_rectangle(
+            50, 125, 200, 135,
+            fill='#FFD700',
+            outline=''
+        )
+    
+    @abstractmethod
+    def procesar(self):
+        """Paso abstracto - implementación específica de cada subclase"""
+        pass
+    
+    def fin(self):
+        """Paso fijo - finalización común"""
+        # Dibujar marco de finalización
+        self.canvas.create_rectangle(
+            10, 10, 540, 140,
+            outline='#00FF00',
+            width=3,
+            fill='#1a1a1a'
+        )
+        
+        # Texto de finalización
+        self.canvas.create_text(
+            275, 30,
+            text="✅ PROCESO COMPLETADO",
+            fill='#00FF00',
+            font=('Arial', 14, 'bold')
+        )
+        
+        self.canvas.create_text(
+            275, 60,
+            text="Paso 3: Fin (Fijo)",
+            fill='white',
+            font=('Arial', 11)
+        )
+        
+        self.canvas.create_text(
+            275, 85,
+            text="✓ Liberando recursos",
+            fill='#4CAF50',
+            font=('Arial', 10)
+        )
+        
+        self.canvas.create_text(
+            275, 105,
+            text="✓ Generando reporte",
+            fill='#4CAF50',
+            font=('Arial', 10)
+        )
+        
+        # Indicador de progreso completo
+        self.canvas.create_rectangle(
+            50, 125, 500, 135,
+            outline='white',
+            width=1
+        )
+        self.canvas.create_rectangle(
+            50, 125, 500, 135,
+            fill='#00FF00',
+            outline=''
+        )
+
+class ProcesadorGraficoRojo(ProcesadorTarea):
+    """Implementación concreta - procesador gráfico rojo"""
+    
+    def __init__(self, canvas, root):
+        super().__init__(canvas)
+        self.root = root
+        
+    def procesar(self):
+        """Implementación específica - dibuja formas rojas"""
+        # Limpiar y redibujar marco
+        self.canvas.delete("all")
+        self.canvas.create_rectangle(
+            10, 10, 540, 140,
+            outline='#FF0000',
+            width=3,
+            fill='#1a1a1a'
+        )
+        
+        # Texto del paso
+        self.canvas.create_text(
+            275, 30,
+            text="🔴 PROCESANDO (MODO ROJO)",
+            fill='#FF0000',
+            font=('Arial', 14, 'bold')
+        )
+        
+        self.canvas.create_text(
+            275, 55,
+            text="Paso 2: Procesar (Variable - Implementación Roja)",
+            fill='white',
+            font=('Arial', 11)
+        )
+        
+        # Dibujar formas rojas
+        # Círculo rojo
+        self.canvas.create_oval(
+            100, 75, 150, 125,
+            fill='#FF0000',
+            outline='white',
+            width=2
+        )
+        
+        # Rectángulo rojo
+        self.canvas.create_rectangle(
+            200, 80, 250, 120,
+            fill='#CC0000',
+            outline='white',
+            width=2
+        )
+        
+        # Triángulo rojo
+        points = [300, 120, 325, 75, 350, 120]
+        self.canvas.create_polygon(
+            points,
+            fill='#FF4444',
+            outline='white',
+            width=2
+        )
+        
+        # Líneas decorativas
+        for i in range(5):
+            x = 400 + i * 20
+            self.canvas.create_line(
+                x, 75, x + 10, 125,
+                fill='#FF6666',
+                width=3
+            )
+        
+        # Indicador de progreso medio
+        self.canvas.create_rectangle(
+            50, 125, 500, 135,
+            outline='white',
+            width=1
+        )
+        self.canvas.create_rectangle(
+            50, 125, 350, 135,
+            fill='#FF0000',
+            outline=''
+        )
+
+class ProcesadorGraficoAzul(ProcesadorTarea):
+    """Implementación concreta - procesador gráfico azul"""
+    
+    def __init__(self, canvas, root):
+        super().__init__(canvas)
+        self.root = root
+        
+    def procesar(self):
+        """Implementación específica - dibuja formas azules"""
+        # Limpiar y redibujar marco
+        self.canvas.delete("all")
+        self.canvas.create_rectangle(
+            10, 10, 540, 140,
+            outline='#0000FF',
+            width=3,
+            fill='#1a1a1a'
+        )
+        
+        # Texto del paso
+        self.canvas.create_text(
+            275, 30,
+            text="🔵 PROCESANDO (MODO AZUL)",
+            fill='#0000FF',
+            font=('Arial', 14, 'bold')
+        )
+        
+        self.canvas.create_text(
+            275, 55,
+            text="Paso 2: Procesar (Variable - Implementación Azul)",
+            fill='white',
+            font=('Arial', 11)
+        )
+        
+        # Dibujar formas azules
+        # Ondas azules
+        for i in range(3):
+            y = 85 + i * 15
+            self.canvas.create_arc(
+                100, y - 10, 200, y + 10,
+                start=0,
+                extent=180,
+                fill='',
+                outline='#0066FF',
+                width=3
+            )
+        
+        # Círculos concéntricos azules
+        for i in range(4):
+            size = 30 - i * 5
+            self.canvas.create_oval(
+                275 - size, 95 - size,
+                275 + size, 95 + size,
+                fill='',
+                outline='#0088FF',
+                width=2
+            )
+        
+        # Estrella azul
+        self._dibujar_estrella(400, 95, 20, '#0044FF')
+        
+        # Indicador de progreso medio
+        self.canvas.create_rectangle(
+            50, 125, 500, 135,
+            outline='white',
+            width=1
+        )
+        self.canvas.create_rectangle(
+            50, 125, 350, 135,
+            fill='#0000FF',
+            outline=''
+        )
+    
+    def _dibujar_estrella(self, cx, cy, size, color):
+        """Dibuja una estrella de 5 puntas"""
+        points = []
+        for i in range(10):
+            angle = math.pi * i / 5 - math.pi / 2
+            if i % 2 == 0:
+                r = size
+            else:
+                r = size * 0.4
+            x = cx + r * math.cos(angle)
+            y = cy + r * math.sin(angle)
+            points.extend([x, y])
+        
+        self.canvas.create_polygon(
+            points,
+            fill=color,
+            outline='white',
+            width=2
+        )
+
 class PatternDemoApp:
     def __init__(self, root):
         self.root = root
@@ -358,12 +679,15 @@ class PatternDemoApp:
             "teletransporte": TeletransporteStrategy()
         }
         
-        # Procesadores para Template Method
+        # Procesadores para Template Method (datos)
         self.processors = {
             "A": SumProcessor(),
             "B": MaxProcessor(),
             "C": StatisticsProcessor()
         }
+        
+        # Procesadores gráficos para Template Method
+        self.procesadores_graficos = {}
         
         # Datos de ejemplo
         self.sample_data = [64, 34, 25, 12, 22, 11, 90, 88, 45, 50]
@@ -591,16 +915,76 @@ class PatternDemoApp:
         )
         template_desc.pack(pady=5)
         
-        # Canvas para animación Template Method
+        # Canvas para animación Template Method (datos)
         self.template_canvas = tk.Canvas(
             template_frame,
             width=550,
-            height=300,
+            height=200,
             bg='#1e1e1e',
             highlightthickness=2,
             highlightbackground=self.colors['template']
         )
-        self.template_canvas.pack(pady=10, padx=10)
+        self.template_canvas.pack(pady=5, padx=10)
+        
+        # Canvas para demostración gráfica Template Method
+        grafico_frame = tk.Frame(template_frame, bg=self.colors['panel_bg'])
+        grafico_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        grafico_label = tk.Label(
+            grafico_frame,
+            text="DEMO TEMPLATE METHOD - FLUJO GRÁFICO",
+            font=('Arial', 11, 'bold'),
+            fg=self.colors['template'],
+            bg=self.colors['panel_bg']
+        )
+        grafico_label.pack(pady=5)
+        
+        self.grafico_canvas = tk.Canvas(
+            grafico_frame,
+            width=550,
+            height=150,
+            bg='#0a0a0a',
+            highlightthickness=2,
+            highlightbackground=self.colors['template']
+        )
+        self.grafico_canvas.pack(pady=5)
+        
+        # Frame de control de procesadores gráficos
+        control_grafico_frame = tk.Frame(grafico_frame, bg=self.colors['panel_bg'])
+        control_grafico_frame.pack(pady=5)
+        
+        # Botones de procesadores gráficos
+        self.procesador_rojo_btn = tk.Button(
+            control_grafico_frame,
+            text="🔴 Procesador Rojo",
+            command=lambda: self.ejecutar_procesador_grafico("rojo"),
+            bg='#FF0000',
+            fg='white',
+            font=('Arial', 9, 'bold'),
+            width=15
+        )
+        self.procesador_rojo_btn.grid(row=0, column=0, padx=5)
+        
+        self.procesador_azul_btn = tk.Button(
+            control_grafico_frame,
+            text="🔵 Procesador Azul",
+            command=lambda: self.ejecutar_procesador_grafico("azul"),
+            bg='#0000FF',
+            fg='white',
+            font=('Arial', 9, 'bold'),
+            width=15
+        )
+        self.procesador_azul_btn.grid(row=0, column=1, padx=5)
+        
+        # Estado del procesador
+        self.procesador_estado_label = tk.Label(
+            grafico_frame,
+            text="Esperando ejecución del Template Method...",
+            font=('Arial', 10),
+            fg=self.colors['text'],
+            bg=self.colors['panel_bg']
+        )
+        self.procesador_estado_label.pack(pady=3)
         
         # Frame de botones Template Method
         template_buttons = tk.Frame(template_frame, bg=self.colors['panel_bg'])
@@ -954,6 +1338,29 @@ class PatternDemoApp:
             
             # Continuar animación
             self.root.after(30, self.actualizar_animacion)  # ~33 FPS
+    
+    def ejecutar_procesador_grafico(self, tipo):
+        """Ejecuta un procesador gráfico usando el Template Method"""
+        # Actualizar estado
+        self.procesador_estado_label.config(
+            text=f"Ejecutando Template Method con Procesador {tipo.capitalize()}..."
+        )
+        
+        # Crear el procesador correspondiente
+        if tipo == "rojo":
+            procesador = ProcesadorGraficoRojo(self.grafico_canvas, self.root)
+        elif tipo == "azul":
+            procesador = ProcesadorGraficoAzul(self.grafico_canvas, self.root)
+        else:
+            return
+        
+        # Ejecutar el Template Method
+        procesador.ejecutar_proceso()
+        
+        # Actualizar estado después de completar
+        self.root.after(3000, lambda: self.procesador_estado_label.config(
+            text="✓ Template Method completado. Estructura fija con paso variable implementado."
+        ))
 
 def main():
     root = tk.Tk()
