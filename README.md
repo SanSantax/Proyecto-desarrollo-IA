@@ -1,4 +1,5 @@
 Daniel Santamaria 20242020023
+Kevin Jhoan Carreño Patiño 20242020308
 
 📑 Histórico de Desarrollo: Strategy vs Template Method
 Este documento registra el proceso de generación de la aplicación mediante inteligencia artificial (Warp AI), detallando los prompts utilizados y las funcionalidades implementadas en cada iteración.
